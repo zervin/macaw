@@ -28,3 +28,21 @@ defaults (flash attention on, 8 threads), language fixed to English.
 Caveats: LibriSpeech is read audiobook speech, close to saturated for both models. It
 says little about your own voice, microphone, accent or vocabulary, which is what
 dictation quality depends on.
+
+## Personal voice test — 2026-11-11
+
+39 sentences from `voice/script.txt` (4.4 min), read into the Framework 13 laptop mic
+after fixing its power-save glitch (see the WirePlumber note in the project memory).
+Recordings and transcripts stay local. WERw, Whisper's English normalizer:
+
+| Engine | Overall | Tech | Names | Median latency | Cost |
+|---|---|---|---|---|---|
+| Parakeet int8, CPU (Myna) | 6.1 % | 15.3 % | 5.6 % | 0.16 s | local |
+| Whisper large-v3-turbo, Vulkan | 6.0 % | 8.7 % | 5.6 % | 0.89 s | local |
+| Voxtral Mini Transcribe 3 (API) | 6.9 % | 8.0 % | 3.7 % | 0.63 s | $0.0035/min |
+| Voxtral Small Transcribe 3 (API) | 6.4 % | 9.3 % | 1.9 % | 0.70 s | $0.004/min |
+| Voxtral Mini 3 + `voice/vocabulary.txt` as context_bias | **5.1 %** | **3.3 %** | 1.9 % | 0.65 s | $0.0035/min |
+
+Number-heavy sentences are scored against spelled-out references, so engines that write
+digits ("6:45", "555-213-8900") look worse there than they are. Next: the same vocabulary
+through Myna's Parakeet keyword boosting.
