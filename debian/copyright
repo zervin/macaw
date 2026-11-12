@@ -1,12 +1,47 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: myna
-Source: https://github.com/canonical/myna
+Upstream-Name: Myna
+Upstream-Contact: https://github.com/canonical/myna
+Source: https://github.com/zervin/myna (fork of https://github.com/canonical/myna)
+Comment:
+ These packages are an unofficial build of Myna by Canonical Ltd., made by
+ the macaw project (https://github.com/zervin/macaw). They are not affiliated
+ with or endorsed by Canonical. "Myna" refers to Canonical's project.
+ .
+ Modifications: the debian-native branch of https://github.com/zervin/myna
+ carries every change made to Myna, one commit per change.
+ .
+ Full texts: the AGPL-3.0 is in /usr/share/doc/<package>/LICENSE (Debian's
+ common-licenses does not include it). Upstream's third-party notices are in
+ NOTICE. The statically linked Rust crates' licenses are in
+ /usr/share/doc/myna-desktop/rust-crates-licenses.txt.gz. Python packages in
+ /usr/lib/myna/server carry their own licenses in their *.dist-info
+ directories (onnxruntime and numpy among them).
 
 Files: *
-Copyright: Canonical Ltd.
+Copyright: 2026 Canonical Ltd.
 License: AGPL-3.0-or-later
 
-Files: debian/*
+Files: myna/server/src/myna/testbed/parakeet.py
+       myna/server/src/myna/testbed/streaming/strategies.py
+Copyright: 2025-2026 Kieirra (Murmure, https://github.com/Kieirra/murmure)
+           2026 Canonical Ltd.
+License: AGPL-3.0-only
+Comment: Parts ported from Murmure and modified by Canonical Ltd.; see the
+ headers of each file.
+
+Files: myna/server/src/myna/testbed/whisper_normalizers/*
+Copyright: 2022 OpenAI
+License: Expat
+Comment: Text normalisers from OpenAI Whisper (https://github.com/openai/whisper),
+ modified by Canonical Ltd.; the full license and changes head each file.
+
+Files: myna/client/myna-hud/data/icons/*
+Copyright: the GNOME Project
+License: LGPL-3.0
+Comment: From adwaita-icon-theme 51.0, unmodified, compiled into myna-hud.
+ The full text is in /usr/share/common-licenses/LGPL-3.
+
+Files: debian/* build.sh ci/*
 Copyright: 2026 zervin
 License: AGPL-3.0-or-later
 
@@ -16,4 +51,38 @@ License: AGPL-3.0-or-later
  Free Software Foundation, either version 3 of the License, or (at your
  option) any later version.
  .
- The full text is in the LICENSE file at the root of this repository.
+ This program is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ details. The full text is in /usr/share/doc/<package>/LICENSE.
+
+License: AGPL-3.0-only
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Affero General Public License, version 3, as
+ published by the Free Software Foundation. The full text is in
+ /usr/share/doc/<package>/LICENSE.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+License: LGPL-3.0
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License, version 3, as
+ published by the Free Software Foundation. On Debian systems the full text
+ is in /usr/share/common-licenses/LGPL-3.

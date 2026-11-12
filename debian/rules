@@ -15,6 +15,8 @@ override_dh_auto_configure:
 
 override_dh_auto_build:
 	cd $(SRC)/client && cargo build --release --locked -p myna-desktop -p myna-hud
+	mkdir -p $(CURDIR)/debian/build
+	python3.13 $(CURDIR)/ci/rust-licenses.py $(SRC)/client $(CURDIR)/debian/build/rust-crates-licenses.txt
 	rm -rf $(VENV_STAGE)
 	$(UV) venv --relocatable --python /usr/bin/python3.13 $(VENV_STAGE)
 	cd $(SRC)/server && $(UV) export --frozen --no-dev --extra parakeet \
@@ -40,6 +42,15 @@ override_dh_auto_install:
 		debian/myna-server-parakeet/usr/lib/myna/fetch_parakeet_onnx.py
 	install -Dm755 debian/myna-server-parakeet.launcher \
 		debian/myna-server-parakeet/usr/libexec/myna/myna-server-parakeet
+	# Attribution: AGPL text, upstream notices, crate and model licenses
+	for p in myna-desktop myna-server-parakeet; do \
+		install -Dm644 $(SRC)/LICENSE debian/$$p/usr/share/doc/$$p/LICENSE; \
+		install -Dm644 $(SRC)/NOTICE debian/$$p/usr/share/doc/$$p/NOTICE; \
+	done
+	install -Dm644 debian/build/rust-crates-licenses.txt \
+		debian/myna-desktop/usr/share/doc/myna-desktop/rust-crates-licenses.txt
+	install -Dm644 debian/MODEL-NOTICE \
+		debian/myna-server-parakeet/usr/share/doc/myna-server-parakeet/MODEL-NOTICE
 
 override_dh_installsystemduser:
 	dh_installsystemduser -pmyna-desktop --name=myna-desktop
@@ -59,3 +70,6 @@ override_dh_shlibdeps:
 override_dh_clean:
 	dh_clean
 	rm -rf debian/build
+
+override_dh_compress:
+	dh_compress -XLICENSE

@@ -38,6 +38,10 @@ Description: offline push-to-talk dictation for the GNOME desktop
  .
  This package holds the dictation daemon (a systemd user service), the HUD
  renderer and its GNOME Shell extension, and the settings schema.
+ .
+ Unofficial build of Myna by Canonical Ltd. (github.com/canonical/myna),
+ with small patches, made by the macaw project. Not affiliated with or
+ endorsed by Canonical.
 
 Package: myna-server-parakeet
 Architecture: amd64
@@ -50,4 +54,9 @@ Description: local speech recognition backend for Myna (Parakeet, CPU)
  .
  The model (about 800 MB) is not in this package. It downloads on the
  service's first start into ~/.cache/myna/models from a pinned URL and is
- checked against a SHA-256 hash.
+ checked against a SHA-256 hash. It is licensed CC-BY-4.0; credits are in
+ /usr/share/doc/myna-server-parakeet/MODEL-NOTICE.
+ .
+ Unofficial build of Myna by Canonical Ltd. (github.com/canonical/myna),
+ with small patches, made by the macaw project. Not affiliated with or
+ endorsed by Canonical.

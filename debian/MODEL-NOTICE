@@ -1,0 +1,24 @@
+The speech model used by myna-server-parakeet
+=============================================
+
+This package does not contain a model. On the service's first start it
+downloads one into ~/.cache/myna/models/parakeet-tdt-0.6b-v3-int8 from
+https://github.com/Kieirra/murmure-model (release 1.2.0), and checks it
+against a pinned SHA-256 hash.
+
+That model is NVIDIA's Parakeet TDT 0.6B v3
+(https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3), Copyright NVIDIA
+Corporation, licensed under the Creative Commons Attribution 4.0
+International License (CC-BY-4.0,
+https://creativecommons.org/licenses/by/4.0/), converted to ONNX and
+quantised to int8. No model was retrained. The derived files and their
+authors, each also published under CC-BY-4.0:
+
+- decoder_joint-model.int8.onnx, nemo128.onnx, vocab.txt: the ONNX export
+  by istupakov, https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx
+- encoder-model.int8.onnx: the SmoothQuant int8 encoder by Olicorne
+  (thiswillbeyourgithub),
+  https://huggingface.co/Olicorne/parakeet-tdt-0.6b-v3-smoothquant-onnx
+
+The bundle is assembled and released by Kieirra as murmure-model.
+This notice is adapted from Myna's parakeet-snap/NOTICE (Canonical Ltd.).
