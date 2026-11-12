@@ -1,0 +1,13 @@
+[Unit]
+Description=Myna dictation daemon (shortcut, capture, IBus injection)
+PartOf=graphical-session.target
+After=graphical-session.target myna-server.service
+
+[Service]
+# Settings live in dconf like any GNOME app (no keyfile backend here).
+ExecStart=/usr/bin/myna-desktop --socket %t/myna.sock
+Restart=on-failure
+RestartSec=1s
+
+[Install]
+WantedBy=graphical-session.target

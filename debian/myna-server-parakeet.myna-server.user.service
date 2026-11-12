@@ -1,0 +1,12 @@
+[Unit]
+Description=Myna speech recognition backend (Parakeet, CPU)
+
+[Service]
+ExecStart=/usr/libexec/myna/myna-server-parakeet
+Restart=on-failure
+RestartSec=2s
+# The first start downloads the model (about 800 MB).
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=default.target

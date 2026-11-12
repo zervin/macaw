@@ -1,0 +1,59 @@
+name: upstream-sync
+
+# Weekly: if canonical/myna has a release tag newer than the one our fork's
+# debian-native branch is based on, rebase our patches onto it, push the fork,
+# bump the submodule, and tag a release here (which build.yml publishes).
+# A rebase conflict opens an issue instead.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+          token: ${{ secrets.FORK_TOKEN }}
+      - name: Rebase fork onto newest upstream tag
+        id: rebase
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global user.name "linux-stt bot"
+          git config --global user.email "zervin@users.noreply.github.com"
+          cd myna
+          git remote add upstream https://github.com/canonical/myna.git
+          git fetch -q upstream --tags
+          git fetch -q origin debian-native
+          git checkout -q -B debian-native origin/debian-native
+          latest=$(git tag -l 'v[0-9]*' --sort=-v:refname | head -1)
+          base=$(git describe --tags --abbrev=0 HEAD)
+          echo "latest=$latest base=$base"
+          if [ "$latest" = "$base" ]; then echo "up to date"; exit 0; fi
+          old_base=$(git merge-base HEAD upstream/main)
+          if ! git rebase -q --onto "$latest" "$old_base" debian-native; then
+            git rebase --abort
+            gh issue create -R "$GITHUB_REPOSITORY" \
+              --title "Rebase onto upstream $latest conflicts" \
+              --body "The debian-native patches do not apply cleanly to canonical/myna $latest. Rebase by hand."
+            exit 1
+          fi
+          git push -q --force-with-lease origin debian-native
+          echo "tag=$latest" >> "$GITHUB_OUTPUT"
+      - name: Bump submodule and tag a release
+        if: steps.rebase.outputs.tag != ''
+        run: |
+          git add myna
+          git commit -qm "Update myna to upstream ${{ steps.rebase.outputs.tag }}"
+          git push -q
+          git tag "${{ steps.rebase.outputs.tag }}-$(date +%Y%m%d)"
+          git push -q --tags

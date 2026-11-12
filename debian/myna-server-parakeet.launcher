@@ -1,0 +1,13 @@
+#!/bin/sh
+# Start the Parakeet backend for the current user. The model downloads on
+# first start (pinned URL, SHA-256 checked) into ~/.cache/myna/models.
+set -eu
+
+venv=/usr/lib/myna/server
+model="${XDG_CACHE_HOME:-$HOME/.cache}/myna/models/parakeet-tdt-0.6b-v3-int8"
+
+"$venv/bin/python" -I /usr/lib/myna/fetch_parakeet_onnx.py --out-dir "$model"
+
+exec "$venv/bin/myna-server" --adapter parakeet --model "$model" \
+    --streaming --preload --socket-mode 0600 \
+    --socket "${XDG_RUNTIME_DIR:?}/myna.sock" "$@"

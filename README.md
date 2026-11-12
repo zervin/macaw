@@ -27,7 +27,7 @@ myna-desktop --install-shortcut '<Super>j'
 Log out and back in once so GNOME Shell loads the HUD extension, then enable it with
 `gnome-extensions enable myna-shell@canonical.com`.
 
-The Parakeet model (about 600 MB) downloads on first start from a pinned URL and is
+The Parakeet model (about 800 MB) downloads on first start from a pinned URL and is
 checked against a SHA-256 hash.
 
 ## License

@@ -1,0 +1,19 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: myna
+Source: https://github.com/canonical/myna
+
+Files: *
+Copyright: Canonical Ltd.
+License: AGPL-3.0-or-later
+
+Files: debian/*
+Copyright: 2026 zervin
+License: AGPL-3.0-or-later
+
+License: AGPL-3.0-or-later
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Affero General Public License as published by the
+ Free Software Foundation, either version 3 of the License, or (at your
+ option) any later version.
+ .
+ The full text is in the LICENSE file at the root of this repository.

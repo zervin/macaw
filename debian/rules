@@ -1,0 +1,61 @@
+#!/usr/bin/make -f
+# Builds from the myna/ submodule. Needs network: cargo and uv fetch locked
+# dependencies (Cargo.lock, uv.lock), so this is not an offline Debian-archive
+# build. RUSTUP_TOOLCHAIN and UV come from build.sh.
+
+export DH_VERBOSE = 1
+SRC := $(CURDIR)/myna
+VENV_STAGE := $(CURDIR)/debian/build/venv
+UV ?= uv
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+
+override_dh_auto_build:
+	cd $(SRC)/client && cargo build --release --locked -p myna-desktop -p myna-hud
+	rm -rf $(VENV_STAGE)
+	$(UV) venv --relocatable --python /usr/bin/python3.13 $(VENV_STAGE)
+	cd $(SRC)/server && $(UV) export --frozen --no-dev --extra parakeet \
+		--no-emit-project --format requirements.txt -o $(CURDIR)/debian/build/requirements.txt
+	$(UV) pip install --python $(VENV_STAGE)/bin/python --require-hashes \
+		-r $(CURDIR)/debian/build/requirements.txt
+	$(UV) pip install --python $(VENV_STAGE)/bin/python --no-deps $(SRC)/server
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	# myna-desktop
+	install -Dm755 $(SRC)/client/target/release/myna-desktop debian/myna-desktop/usr/bin/myna-desktop
+	install -Dm755 $(SRC)/client/target/release/myna-hud debian/myna-desktop/usr/libexec/myna/myna-hud
+	install -Dm644 -t debian/myna-desktop/usr/share/glib-2.0/schemas \
+		$(SRC)/client/data/glib-2.0/schemas/com.canonical.Myna.Dictation.gschema.xml
+	install -Dm644 -t debian/myna-desktop/usr/share/gnome-shell/extensions/myna-shell@canonical.com \
+		$(SRC)/extensions/myna-shell/*.js $(SRC)/extensions/myna-shell/metadata.json
+	# myna-server-parakeet
+	mkdir -p debian/myna-server-parakeet/usr/lib/myna
+	cp -a $(VENV_STAGE) debian/myna-server-parakeet/usr/lib/myna/server
+	install -Dm644 $(SRC)/dev/parakeet/fetch_parakeet_onnx.py \
+		debian/myna-server-parakeet/usr/lib/myna/fetch_parakeet_onnx.py
+	install -Dm755 debian/myna-server-parakeet.launcher \
+		debian/myna-server-parakeet/usr/libexec/myna/myna-server-parakeet
+
+override_dh_installsystemduser:
+	dh_installsystemduser -pmyna-desktop --name=myna-desktop
+	dh_installsystemduser -pmyna-server-parakeet --name=myna-server
+
+# The venv holds prebuilt wheels (onnxruntime bundles its own libraries):
+# leave them as shipped.
+override_dh_strip:
+	dh_strip -Xusr/lib/myna/server
+
+override_dh_dwz:
+	dh_dwz -Xusr/lib/myna/server
+
+override_dh_shlibdeps:
+	dh_shlibdeps -Xusr/lib/myna/server
+
+override_dh_clean:
+	dh_clean
+	rm -rf debian/build

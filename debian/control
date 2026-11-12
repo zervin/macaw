@@ -1,0 +1,53 @@
+Source: myna
+Section: sound
+Priority: optional
+Maintainer: zervin <zervin@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+               ca-certificates,
+               curl,
+               libadwaita-1-dev (>= 1.5),
+               libclang-dev,
+               libegl-dev,
+               libepoxy-dev,
+               libgl1-mesa-dev,
+               libglib2.0-dev,
+               libgtk-4-dev (>= 4.14),
+               libgtk4-layer-shell-dev,
+               libpipewire-0.3-dev,
+               pkgconf,
+               python3.13,
+               rustup,
+Standards-Version: 4.7.2
+Homepage: https://github.com/zervin/linux-stt
+Vcs-Git: https://github.com/zervin/linux-stt.git
+Rules-Requires-Root: no
+
+Package: myna-desktop
+Architecture: amd64
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         ibus,
+         pipewire,
+Recommends: gnome-shell (>= 46),
+            myna-server-parakeet,
+Description: offline push-to-talk dictation for the GNOME desktop
+ Myna types what you say into the focused application. Press a shortcut,
+ speak, press it again, and the transcript is injected through IBus.
+ Audio stays on the machine: transcription runs in a local backend such as
+ myna-server-parakeet.
+ .
+ This package holds the dictation daemon (a systemd user service), the HUD
+ renderer and its GNOME Shell extension, and the settings schema.
+
+Package: myna-server-parakeet
+Architecture: amd64
+Depends: ${misc:Depends},
+         python3.13,
+Recommends: myna-desktop,
+Description: local speech recognition backend for Myna (Parakeet, CPU)
+ Runs NVIDIA's Parakeet TDT 0.6B v3 model (25 languages, punctuation) as
+ int8 ONNX on the CPU and serves it to myna-desktop over a Unix socket.
+ .
+ The model (about 800 MB) is not in this package. It downloads on the
+ service's first start into ~/.cache/myna/models from a pinned URL and is
+ checked against a SHA-256 hash.
