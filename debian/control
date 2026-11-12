@@ -3,8 +3,11 @@ Section: sound
 Priority: optional
 Maintainer: zervin <zervin@users.noreply.github.com>
 Build-Depends: debhelper-compat (= 13),
+               appstream <!nocheck>,
+               blueprint-compiler (>= 0.12),
                ca-certificates,
                curl,
+               gettext,
                libadwaita-1-dev (>= 1.5),
                libclang-dev,
                libegl-dev,
@@ -29,6 +32,7 @@ Depends: ${misc:Depends},
          ibus,
          pipewire,
 Recommends: gnome-shell (>= 46),
+            myna-config,
             myna-server-parakeet,
 Description: offline push-to-talk dictation for the GNOME desktop
  Myna types what you say into the focused application. Press a shortcut,
@@ -56,6 +60,24 @@ Description: local speech recognition backend for Myna (Parakeet, CPU)
  service's first start into ~/.cache/myna/models from a pinned URL and is
  checked against a SHA-256 hash. It is licensed CC-BY-4.0; credits are in
  /usr/share/doc/myna-server-parakeet/MODEL-NOTICE.
+ .
+ Unofficial build of Myna by Canonical Ltd. (github.com/canonical/myna),
+ with small patches, made by the macaw project. Not affiliated with or
+ endorsed by Canonical.
+
+Package: myna-config
+Architecture: amd64
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         myna-desktop (= ${binary:Version}),
+Description: settings for Myna dictation
+ Myna Settings edits what the dictation daemon reads live: the keyboard
+ shortcut, when to transcribe, the indicator, sounds, and the vocabulary of
+ names and terms the model is biased toward. It also shows the installed
+ model and a diagnostics report.
+ .
+ This build detects a package-based install and leaves models to the
+ package manager: it installs, switches and configures nothing through snapd.
  .
  Unofficial build of Myna by Canonical Ltd. (github.com/canonical/myna),
  with small patches, made by the macaw project. Not affiliated with or

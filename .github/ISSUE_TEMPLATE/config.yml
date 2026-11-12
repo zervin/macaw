@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Myna bugs that also happen with the official snaps
+    url: https://github.com/canonical/myna/issues
+    about: Report those upstream, to Canonical.
+  - name: Security vulnerability
+    url: https://github.com/zervin/macaw/security/advisories/new
+    about: Report privately, please.

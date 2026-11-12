@@ -1,5 +1,11 @@
 name: build
 
+# Every push and pull request builds the debs in a clean debian:trixie
+# container and runs Myna's Rust test suites (build.sh). A v* tag also
+# publishes: a GitHub release with build-provenance attestations, and the
+# signed apt repository on GitHub Pages. Only the release job can write
+# anything, and it runs no build code.
+
 on:
   push:
     branches: [main]
@@ -8,23 +14,25 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 jobs:
   debs:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
           fetch-depth: 0
+          # Third-party build scripts run in this job; leave them no token.
+          persist-credentials: false
       - name: Fetch submodule tags (version comes from git describe)
         run: git -C myna fetch --tags --unshallow 2>/dev/null || git -C myna fetch --tags
-      - name: Build debs in debian:trixie
+      - name: Build and test the debs in debian:trixie
         run: ./build.sh "${GITHUB_RUN_NUMBER}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: debs
           path: dist/*.deb
@@ -34,21 +42,32 @@ jobs:
     needs: debs
     runs-on: ubuntu-24.04
     environment: github-pages
+    permissions:
+      contents: write      # the GitHub release
+      pages: write         # the apt repository
+      id-token: write      # Pages deployment and attestation signing
+      attestations: write  # build provenance for each deb
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: debs
           path: dist
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/*.deb
       - name: GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.deb --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" dist/*.deb --verify-tag --generate-notes
       - name: Build signed apt repository
         env:
           APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
         run: ./ci/apt-repo.sh dist site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -1,0 +1,16 @@
+# Weekly pull requests for pinned GitHub Actions (pinned by commit hash) and
+# the hash-pinned Python build backend. The build container's digest in
+# build.sh is updated by hand: Dependabot reads Dockerfiles, not scripts.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: pip
+    directory: /ci
+    schedule:
+      interval: monthly

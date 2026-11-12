@@ -1,9 +1,15 @@
 name: upstream-sync
 
-# Weekly: if canonical/myna has a release tag newer than the one our fork's
-# debian-native branch is based on, rebase our patches onto it, push the fork,
-# bump the submodule, and tag a release here (which build.yml publishes).
-# A rebase conflict opens an issue instead.
+# Weekly: when canonical/myna has a release tag newer than the one our fork's
+# patches sit on, rebase the patches onto it and open a pull request here that
+# moves the submodule. Nothing ships until a maintainer reviews and merges it
+# and tags a release (CONTRIBUTING.md, "Releasing"). A rebase conflict opens
+# an issue instead.
+#
+# FORK_TOKEN: a fine-grained token limited to zervin/myna and zervin/macaw,
+# "Contents: read and write" and "Pull requests: read and write". It pushes
+# branches only, never debian-native or a tag, and is never written to
+# .git/config. A token rather than GITHUB_TOKEN so the pull request's CI runs.
 
 on:
   schedule:
@@ -11,23 +17,26 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  issues: write
+  contents: read
 
 jobs:
   sync:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write   # a rebase conflict opens an issue
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
           fetch-depth: 0
-          token: ${{ secrets.FORK_TOKEN }}
-      - name: Rebase fork onto newest upstream tag
+          persist-credentials: false
+      - name: Rebase the fork's patches onto the newest upstream release
         id: rebase
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -eu
           git config --global user.name "macaw bot"
           git config --global user.email "zervin@users.noreply.github.com"
           cd myna
@@ -35,10 +44,14 @@ jobs:
           git fetch -q upstream --tags
           git fetch -q origin debian-native
           git checkout -q -B debian-native origin/debian-native
-          latest=$(git tag -l 'v[0-9]*' --sort=-v:refname | head -1)
-          base=$(git describe --tags --abbrev=0 HEAD)
+          # Only plain release tags: a tag name is upstream-controlled text.
+          latest=$(git tag -l 'v[0-9]*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          base=$(git describe --tags --abbrev=0 --match 'v[0-9]*' HEAD)
           echo "latest=$latest base=$base"
-          if [ "$latest" = "$base" ]; then echo "up to date"; exit 0; fi
+          if [ -z "$latest" ] || [ "$latest" = "$base" ]; then echo "up to date"; exit 0; fi
+          if git ls-remote --exit-code origin "refs/heads/sync/$latest" >/dev/null; then
+            echo "sync/$latest already proposed"; exit 0
+          fi
           old_base=$(git merge-base HEAD upstream/main)
           if ! git rebase -q --onto "$latest" "$old_base" debian-native; then
             git rebase --abort
@@ -47,13 +60,23 @@ jobs:
               --body "The debian-native patches do not apply cleanly to canonical/myna $latest. Rebase by hand."
             exit 1
           fi
-          git push -q --force-with-lease origin debian-native
           echo "tag=$latest" >> "$GITHUB_OUTPUT"
-      - name: Bump submodule and tag a release
+      - name: Push branches and open a pull request
         if: steps.rebase.outputs.tag != ''
+        env:
+          TAG: ${{ steps.rebase.outputs.tag }}
+          FORK_TOKEN: ${{ secrets.FORK_TOKEN }}
+          GH_TOKEN: ${{ secrets.FORK_TOKEN }}
         run: |
+          set -eu
+          case "$TAG" in v[0-9]*.[0-9]*.[0-9]*) ;; *) echo "bad tag"; exit 1 ;; esac
+          branch="sync/$TAG"
+          git -C myna push -q "https://x-access-token:${FORK_TOKEN}@github.com/zervin/myna.git" \
+            "HEAD:refs/heads/$branch"
+          git checkout -q -b "$branch"
           git add myna
-          git commit -qm "Update myna to upstream ${{ steps.rebase.outputs.tag }}"
-          git push -q
-          git tag "${{ steps.rebase.outputs.tag }}-$(date +%Y%m%d)"
-          git push -q --tags
+          git commit -qm "Update myna to upstream $TAG"
+          git push -q "https://x-access-token:${FORK_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$branch"
+          gh pr create -R "$GITHUB_REPOSITORY" --head "$branch" \
+            --title "Update myna to upstream $TAG" \
+            --body "Rebases the debian-native patches onto canonical/myna $TAG (fork branch \`$branch\`). Review the upstream changes, check CI, then merge and follow CONTRIBUTING.md, Releasing."

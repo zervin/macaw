@@ -5,7 +5,8 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 rev="${1:-1}"
-image="${MYNA_BUILD_IMAGE:-debian:trixie}"
+# Pinned by digest; Dependabot proposes updates (.github/dependabot.yml).
+image="${MYNA_BUILD_IMAGE:-debian:trixie@sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6}"
 
 # Pinned tools fetched inside the container.
 RUST_TOOLCHAIN="$(sed -n 's/^channel = "\(.*\)"/\1/p' "$here/myna/client/rust-toolchain.toml")"
@@ -16,7 +17,7 @@ version="$("$here/myna/dev/version.sh")-$rev"
 mkdir -p "$here/dist"
 
 docker run --rm -i \
-    -v "$here:/src" -w /src \
+    -v "$here:/src:ro" -v "$here/dist:/out" -w /src \
     -e VERSION="$version" -e RUST_TOOLCHAIN="$RUST_TOOLCHAIN" \
     -e UV_VERSION="$UV_VERSION" -e UV_SHA256="$UV_SHA256" \
     -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
@@ -24,6 +25,12 @@ docker run --rm -i \
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends build-essential devscripts equivs git >/dev/null
+
+# Work on a copy (without local build output) so nothing writes into the repo.
+rm -rf /build && mkdir /build
+tar -C /src --exclude=./dist --exclude=./myna/client/target --exclude=./myna/server/.venv \
+    --exclude=./debian/build -cf - . | tar -C /build -xf -
+cd /build
 mk-build-deps --install --remove --tool 'apt-get -y -qq --no-install-recommends' debian/control >/dev/null
 
 rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal >/dev/null
@@ -34,11 +41,6 @@ echo "$UV_SHA256  /tmp/uv.tgz" | sha256sum -c - >/dev/null
 tar -xzf /tmp/uv.tgz -C /usr/local/bin --strip-components=1
 export UV_PYTHON_DOWNLOADS=never UV_CACHE_DIR=/tmp/uv-cache
 
-# Work on a copy (without local build output) so nothing writes into the repo.
-rm -rf /build && mkdir /build
-tar -C /src --exclude=./dist --exclude=./myna/client/target --exclude=./myna/server/.venv \
-    --exclude=./debian/build -cf - . | tar -C /build -xf -
-cd /build
 git config --global --add safe.directory '*'
 cat > debian/changelog <<CL
 myna ($VERSION) trixie; urgency=medium
@@ -48,8 +50,8 @@ myna ($VERSION) trixie; urgency=medium
  -- zervin <zervin@users.noreply.github.com>  $(date -R)
 CL
 dpkg-buildpackage -b -us -uc
-cp ../*.deb /src/dist/
-chown "$HOST_UID:$HOST_GID" /src/dist/*.deb
+cp ../*.deb /out/
+chown "$HOST_UID:$HOST_GID" /out/*.deb
 EOF
 
 ls -la "$here/dist"

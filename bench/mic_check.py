@@ -7,7 +7,7 @@ speech level, noise floor, signal-to-noise and left/right correlation (a
 negative correlation means one channel is phase-inverted, so a mono downmix
 cancels speech).
 
-    python3 bench/mic_check.py [--target <node.name>]
+    uv run --project myna/server python bench/mic_check.py [--target <node.name>]
 """
 
 import argparse

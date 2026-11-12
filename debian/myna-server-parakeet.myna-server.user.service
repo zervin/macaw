@@ -3,10 +3,18 @@ Description=Myna speech recognition backend (Parakeet, CPU)
 
 [Service]
 ExecStart=/usr/libexec/myna/myna-server-parakeet
-Restart=on-failure
-RestartSec=2s
-# The first start downloads the model (about 800 MB).
+# The first start downloads the model (about 800 MB) into ~/.cache/myna; an
+# interrupted download resumes. Retries back off from 5 s to 10 min, and a
+# checksum mismatch (exit 3) stops retrying instead of downloading again.
 TimeoutStartSec=infinity
+Restart=on-failure
+RestartSec=5s
+RestartSteps=6
+RestartMaxDelaySec=10min
+RestartPreventExitStatus=3
+NoNewPrivileges=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 
 [Install]
 WantedBy=default.target

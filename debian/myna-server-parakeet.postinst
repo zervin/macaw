@@ -9,7 +9,7 @@ set -e
 if [ "$1" = "configure" ] && [ -n "$2" ] && [ -z "${DPKG_ROOT:-}" ] && command -v loginctl >/dev/null; then
 	for user in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}'); do
 		systemctl --user -M "$user@" daemon-reload >/dev/null 2>&1 || true
-		systemctl --user -M "$user@" try-restart myna-server.service >/dev/null 2>&1 || true
+		systemctl --user -M "$user@" --no-block try-restart myna-server.service >/dev/null 2>&1 || true
 	done
 fi
 

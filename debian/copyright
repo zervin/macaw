@@ -13,7 +13,8 @@ Comment:
  Full texts: the AGPL-3.0 is in /usr/share/doc/<package>/LICENSE (Debian's
  common-licenses does not include it). Upstream's third-party notices are in
  NOTICE. The statically linked Rust crates' licenses are in
- /usr/share/doc/myna-desktop/rust-crates-licenses.txt.gz. Python packages in
+ /usr/share/doc/<package>/rust-crates-licenses.txt.gz (myna-desktop and
+ myna-config). Python packages in
  /usr/lib/myna/server carry their own licenses in their *.dist-info
  directories (onnxruntime and numpy among them).
 

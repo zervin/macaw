@@ -17,9 +17,10 @@ as on the Open ASR Leaderboard. `run-vulkan-vs-cpu.sh` runs the comparison below
    the words you actually say cut Parakeet's errors on a jargon-heavy test from 22 % to
    9 %, ahead of the cloud model without a list (11 %), at no cost in privacy and about
    0.1 s of latency, with no false hits on plain speech. A generic tech list barely
-   helped (22 → 19 %): it has to be your words. In Myna, set them with
-   `gsettings set com.canonical.Myna.Dictation vocabulary "['…', …]"` (up to 100), then
-   restart `myna-desktop`; the running daemon did not pick up the change in our test.
+   helped (22 → 19 %): it has to be your words. Edit them under Vocabulary in Myna
+   Settings (up to 100); the daemon applies a change from the next dictation. Myna keeps
+   its settings in its own keyfile, not in dconf, so a plain `gsettings set` changes
+   nothing Myna reads.
 4. **Fix the microphone first.** On a Framework 13 AMD the internal mic woke from
    power-save with about 1.5 s of full-scale noise, and mic boost clipped speech; a
    WirePlumber no-suspend rule and boost at 0 fixed both.
