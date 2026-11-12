@@ -1,0 +1,6 @@
+{"label": "whisper-large-v3-turbo-vulkan-clean", "clips": 202, "audio_min": 30.4, "WER%": 2.54, "WERw%": 1.96, "RTFx": 9.2, "latency_median_s": 0.957, "latency_p95_s": 1.152}
+{"label": "whisper-large-v3-turbo-vulkan-other", "clips": 202, "audio_min": 23.3, "WER%": 4.47, "WERw%": 3.79, "RTFx": 7.2, "latency_median_s": 0.933, "latency_p95_s": 1.118}
+{"label": "whisper-large-v3-turbo-q5_0-vulkan-clean", "clips": 202, "audio_min": 30.4, "WER%": 2.58, "WERw%": 1.96, "RTFx": 10.7, "latency_median_s": 0.833, "latency_p95_s": 0.944}
+{"label": "whisper-large-v3-turbo-q5_0-vulkan-other", "clips": 202, "audio_min": 23.3, "WER%": 4.68, "WERw%": 3.85, "RTFx": 8.6, "latency_median_s": 0.797, "latency_p95_s": 0.894}
+{"label": "parakeet-int8-cpu-clean", "clips": 202, "audio_min": 30.4, "WER%": 2.47, "WERw%": 2.25, "RTFx": 41.6, "latency_median_s": 0.187, "latency_p95_s": 0.47}
+{"label": "parakeet-int8-cpu-other", "clips": 202, "audio_min": 23.3, "WER%": 4.17, "WERw%": 4.01, "RTFx": 40.4, "latency_median_s": 0.143, "latency_p95_s": 0.364}
