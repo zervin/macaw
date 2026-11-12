@@ -43,17 +43,19 @@ def read_wav(path: Path) -> np.ndarray:
 
 
 class Parakeet:
-    def __init__(self, model_dir: str | None) -> None:
+    def __init__(self, model_dir: str | None, keywords: list[str]) -> None:
         from myna.testbed.parakeet import ParakeetAdapter, _default_model_dir
 
         self.adapter = ParakeetAdapter(model_dir or _default_model_dir())
         self.model = asyncio.run(self.adapter._load_model())
+        # The same bias the server builds from a session's `keywords`.
+        self.bias = self.model.keyword_bias(tuple(keywords)) if keywords else None
 
     def warm(self, clip) -> None:
         self(clip)
 
     def __call__(self, clip) -> str:
-        words = self.model.transcribe_words(read_wav(clip.path))
+        words = self.model.transcribe_words(read_wav(clip.path), self.bias)
         return "".join(w.text for w in words).strip()
 
 
@@ -130,7 +132,7 @@ def main() -> None:
     ap.add_argument("--url", default="http://127.0.0.1:8178")
     ap.add_argument("--language", default="en")
     ap.add_argument("--mistral-model", default="voxtral-mini-transcribe-3")
-    ap.add_argument("--bias-file", type=Path, help="mistral context_bias: one term per line")
+    ap.add_argument("--bias-file", type=Path, help="vocabulary, one term per line: Parakeet keyword bias or Mistral context_bias")
     ap.add_argument("--label", help="free-text label stored on every row")
     ap.add_argument("-n", type=int, default=0, help="only the first N clips")
     args = ap.parse_args()
@@ -138,13 +140,13 @@ def main() -> None:
     clips = load_manifest(args.manifest)
     if args.n:
         clips = clips[: args.n]
+    vocab = [t.strip() for t in args.bias_file.read_text().splitlines() if t.strip()] if args.bias_file else []
     if args.engine == "parakeet":
-        engine = Parakeet(args.model)
+        engine = Parakeet(args.model, vocab)
     elif args.engine == "whisper-server":
         engine = WhisperServer(args.url, args.language)
     else:
-        bias = args.bias_file.read_text().split("\n") if args.bias_file else []
-        engine = MistralApi(args.mistral_model, args.language, [b.strip() for b in bias if b.strip()])
+        engine = MistralApi(args.mistral_model, args.language, vocab)
     engine.warm(clips[0])  # model load and first-run kernel compiles are not decode time
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
