@@ -1,0 +1,4 @@
+[submodule "myna"]
+	path = myna
+	url = https://github.com/zervin/myna.git
+	branch = debian-native
