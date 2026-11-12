@@ -8,6 +8,7 @@ Build-Depends: debhelper-compat (= 13),
                ca-certificates,
                curl,
                gettext,
+               gpg,
                libadwaita-1-dev (>= 1.5),
                libclang-dev,
                libegl-dev,
@@ -29,6 +30,7 @@ Package: myna-desktop
 Architecture: amd64
 Depends: ${misc:Depends},
          ${shlibs:Depends},
+         macaw-archive-keyring,
          ibus,
          pipewire,
 Recommends: gnome-shell (>= 46),
@@ -82,3 +84,15 @@ Description: settings for Myna dictation
  Unofficial build of Myna by Canonical Ltd. (github.com/canonical/myna),
  with small patches, made by the macaw project. Not affiliated with or
  endorsed by Canonical.
+
+Package: macaw-archive-keyring
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends},
+Description: signing keys of the macaw apt repository
+ The OpenPGP keys that sign the macaw apt repository, which publishes
+ unofficial Debian packages of Canonical's Myna dictation. apt keeps it up
+ to date, so a new signing subkey reaches every machine before the
+ repository is signed with it.
+ .
+ Primary key fingerprint: 3142 5706 23DB C5C4 E976  B0F6 11E8 2FCA 6433 F584

@@ -60,6 +60,10 @@ override_dh_auto_install:
 		$(SRC)/client/data/icons/hicolor/scalable/apps/com.canonical.Myna.Config.svg
 	sh $(SRC)/client/myna-config/build/install-translations.sh \
 		$(SRC)/client/myna-config/po debian/myna-config
+	# macaw-archive-keyring: the repository's public keys, from the repo copy
+	install -d debian/macaw-archive-keyring/usr/share/keyrings
+	gpg --dearmor < $(CURDIR)/macaw-archive-key.asc \
+		> debian/macaw-archive-keyring/usr/share/keyrings/macaw-archive-keyring.gpg
 	# myna-server-parakeet
 	mkdir -p debian/myna-server-parakeet/usr/lib/myna
 	cp -a $(VENV_STAGE) debian/myna-server-parakeet/usr/lib/myna/server

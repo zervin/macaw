@@ -42,7 +42,7 @@ License: LGPL-3.0
 Comment: From adwaita-icon-theme 51.0, unmodified, compiled into myna-hud.
  The full text is in /usr/share/common-licenses/LGPL-3.
 
-Files: debian/* build.sh ci/*
+Files: debian/* build.sh ci/* install.sh macaw-archive-key.asc
 Copyright: 2026 zervin
 License: AGPL-3.0-or-later
 

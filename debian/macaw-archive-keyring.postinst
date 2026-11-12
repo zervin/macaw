@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+#DEBHELPER#
+
+# Earlier installs pointed the source at a key copied to /etc/apt/keyrings.
+# Point it at the keyring this package keeps current, and drop the copy.
+sources=/etc/apt/sources.list.d/macaw.sources
+old=/etc/apt/keyrings/macaw.gpg
+new=/usr/share/keyrings/macaw-archive-keyring.gpg
+if [ "$1" = configure ] && [ -f "$sources" ] && grep -q "^Signed-By: $old\$" "$sources"; then
+	sed -i "s|^Signed-By: $old\$|Signed-By: $new|" "$sources"
+	rm -f "$old"
+fi
+
+exit 0

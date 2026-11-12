@@ -49,9 +49,8 @@ These are the same steps the script runs.
 2. Install the key and the repository:
 
    ```sh
-   sudo install -d -m 0755 /etc/apt/keyrings
-   gpg --dearmor < macaw.asc | sudo tee /etc/apt/keyrings/macaw.gpg >/dev/null
-   printf 'Types: deb\nURIs: https://zervin.github.io/macaw\nSuites: trixie\nComponents: main\nSigned-By: /etc/apt/keyrings/macaw.gpg\n' \
+   gpg --dearmor < macaw.asc | sudo tee /usr/share/keyrings/macaw-archive-keyring.gpg >/dev/null
+   printf 'Types: deb\nURIs: https://zervin.github.io/macaw\nSuites: trixie\nComponents: main\nSigned-By: /usr/share/keyrings/macaw-archive-keyring.gpg\n' \
      | sudo tee /etc/apt/sources.list.d/macaw.sources
    ```
 
@@ -59,9 +58,12 @@ These are the same steps the script runs.
 
    ```sh
    sudo apt update
-   sudo apt install myna-desktop myna-server-parakeet myna-config
+   sudo apt install myna-desktop myna-server-parakeet myna-config macaw-archive-keyring
    myna-desktop --install-shortcut '<Super>j'
    ```
+
+   `macaw-archive-keyring` takes over the key file and keeps it current, so a
+   future signing key reaches you through `apt upgrade`.
 
 ### After installing
 
@@ -87,8 +89,8 @@ sh install.sh --uninstall   # remove the packages, the repository and its key
 sh install.sh --purge       # also delete the model and your Myna settings
 ```
 
-By hand: `sudo apt remove myna-desktop myna-server-parakeet myna-config`, delete
-`/etc/apt/sources.list.d/macaw.sources` and `/etc/apt/keyrings/macaw.gpg`, and, to free
+By hand: `sudo apt remove myna-desktop myna-server-parakeet myna-config macaw-archive-keyring`,
+delete `/etc/apt/sources.list.d/macaw.sources`, and, to free
 the space, `~/.cache/myna` (the model) and `~/.config/myna` (your settings).
 
 ## What runs and where
@@ -98,6 +100,7 @@ the space, `~/.cache/myna` (the model) and `~/.config/myna` (your settings).
 | `myna-desktop` | The dictation daemon (a systemd user service), the on-screen indicator and its GNOME Shell extension. |
 | `myna-server-parakeet` | Speech recognition on your CPU: NVIDIA's Parakeet TDT 0.6B v3, int8 ONNX, 25 European languages, with punctuation. |
 | `myna-config` | Myna Settings. |
+| `macaw-archive-keyring` | The repository's signing keys, kept current by apt. |
 
 **Privacy.** Audio goes from your microphone to the local recognizer over a private
 socket (`$XDG_RUNTIME_DIR/myna.sock`, readable only by you). Nothing is sent anywhere.
@@ -129,7 +132,8 @@ Every release is built by GitHub Actions from a tagged commit of this repository
 gh attestation verify myna-desktop_*.deb --repo zervin/macaw
 ```
 
-The apt repository is signed with the key above. Security reports: [SECURITY.md](SECURITY.md).
+The apt repository is signed by a subkey of the key above; the primary key is kept
+offline. Security reports: [SECURITY.md](SECURITY.md).
 
 ## Build it yourself
 

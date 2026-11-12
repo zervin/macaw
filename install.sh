@@ -8,8 +8,9 @@
 #   1. Downloads the repository signing key and refuses to continue unless its
 #      fingerprint is exactly KEY_FINGERPRINT below.
 #   2. Adds the repository (/etc/apt/sources.list.d/macaw.sources), signed-by
-#      that key only (/etc/apt/keyrings/macaw.gpg).
-#   3. Installs myna-desktop, myna-server-parakeet and myna-config with apt.
+#      that key only (/usr/share/keyrings/macaw-archive-keyring.gpg).
+#   3. Installs myna-desktop, myna-server-parakeet and myna-config with apt,
+#      and macaw-archive-keyring, which keeps that key file current.
 #   4. Sets the dictation shortcut (Super+J) for you, the user running it.
 #
 # Root is used only through sudo, for steps 2 and 3. Nothing is piped into a
@@ -23,9 +24,9 @@ REPO_URL=https://zervin.github.io/macaw
 SUITE=trixie
 KEY_URL="$REPO_URL/macaw-archive-key.asc"
 KEY_FINGERPRINT=3142570623DBC5C4E976B0F611E82FCA6433F584
-KEYRING=/etc/apt/keyrings/macaw.gpg
+KEYRING=/usr/share/keyrings/macaw-archive-keyring.gpg
 SOURCES=/etc/apt/sources.list.d/macaw.sources
-PACKAGES="myna-desktop myna-server-parakeet myna-config"
+PACKAGES="myna-desktop myna-server-parakeet myna-config macaw-archive-keyring"
 
 say() { printf '\033[1m==>\033[0m %s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
@@ -54,8 +55,7 @@ confirm() {
 
 remove_repo() {
     say "Removing the macaw repository and its key"
-    sudo rm -f "$SOURCES" "$KEYRING" \
-        /etc/apt/sources.list.d/macaw.list /usr/share/keyrings/macaw-archive-keyring.gpg
+    sudo rm -f "$SOURCES" "$KEYRING" /etc/apt/sources.list.d/macaw.list /etc/apt/keyrings/macaw.gpg
 }
 
 if [ "$mode" != install ]; then
@@ -106,9 +106,9 @@ say "Key fingerprint matches $KEY_FINGERPRINT"
 gpg --dearmor < "$tmp/key.asc" > "$tmp/macaw.gpg"
 
 confirm "Add the macaw repository and install $PACKAGES?"
-# An older install used these paths; one source per repository.
-sudo rm -f /etc/apt/sources.list.d/macaw.list /usr/share/keyrings/macaw-archive-keyring.gpg
-sudo install -d -m 0755 /etc/apt/keyrings
+# Earlier installs used these paths; one source per repository.
+sudo rm -f /etc/apt/sources.list.d/macaw.list /etc/apt/keyrings/macaw.gpg
+# The keyring package takes this file over once installed.
 sudo install -m 0644 "$tmp/macaw.gpg" "$KEYRING"
 cat > "$tmp/macaw.sources" <<EOF
 Types: deb

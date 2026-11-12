@@ -14,9 +14,13 @@ will pass it on.
 
 ## What you can verify
 
-- **The apt repository** is signed with the key
-  `3142 5706 23DB C5C4 E976  B0F6 11E8 2FCA 6433 F584` (Ed25519, expires 2031-11-11, to be
-  extended before then). The install script refuses any other key.
+- **The apt repository's key** is `3142 5706 23DB C5C4 E976  B0F6 11E8 2FCA 6433 F584`
+  (Ed25519, expires 2031-11-11). That primary key is kept offline, with a revocation
+  certificate, and never on a server. Releases are signed by its subkey
+  `5E0E AC25 DE6D 7CB7 BED9  4EC8 C623 46BE E7AE 2354` (signing only, expires
+  2028-11-11), the only key material in CI. A new subkey reaches machines through the
+  `macaw-archive-keyring` package before anything is signed with it. The install script
+  refuses any key but the primary above.
 - **Each release's `.deb` files** carry a build provenance attestation, signed by GitHub
   Actions, tying them to the commit and workflow that built them:
   `gh attestation verify <file>.deb --repo zervin/macaw`.
@@ -26,7 +30,8 @@ will pass it on.
 ## How releases are protected
 
 - Only a `v*` tag publishes, and only the release job can write. That job runs in the
-  `github-pages` environment, which holds the signing key, and runs no build code.
+  `github-pages` environment, which holds the signing subkey and accepts only `v*` tags,
+  and runs no build code.
 - The build job has a read-only token and keeps no credentials while third-party build
   scripts run.
 - Third-party actions are pinned to full commit hashes, the build container to a digest,
