@@ -1,0 +1,42 @@
+# Reading script for the personal voice test. One sentence per line:
+# category|text. Read each line naturally, as you would dictate it.
+# Edit freely: swap in names, projects and terms you really say.
+everyday|I'm going to pick up groceries after work, so let me know if you need anything.
+everyday|The meeting got moved to Thursday afternoon because half the team is out sick.
+everyday|Can you send me the link again? I think I closed the tab by accident.
+everyday|We should probably leave around seven if we want to beat the traffic.
+everyday|Honestly, I didn't expect the update to take this long, but it's finally done.
+everyday|Remind me tomorrow morning to call the dentist and reschedule my appointment.
+email|Hi everyone, thanks for joining today's call; I'll send the notes out by end of day.
+email|Following up on my last message, could you confirm whether the contract was signed?
+email|I've attached the revised proposal, which addresses the concerns raised in last week's review.
+email|Please let me know if you have any questions, and I'll be happy to walk through the details.
+email|Unfortunately, we won't be able to meet the original deadline, so I'm proposing the twenty-first instead.
+email|To summarize, the budget is approved, the hiring plan is on hold, and the launch stays on schedule.
+tech|I rebuilt the Debian package in a Docker container and pushed the release to GitHub.
+tech|The GNOME Shell extension talks to the daemon over D-Bus and injects text through IBus.
+tech|Run the Vulkan benchmark on the Radeon GPU and compare it against the CPU baseline.
+tech|PipeWire picked the wrong microphone, so I switched the default source in the sound settings.
+tech|The Kotlin app crashes on startup because the Gradle build is missing a dependency.
+tech|Point the Tailscale sidecar at the Forgejo runner and restart the compose stack.
+tech|LibreChat is calling the Mistral API for speech to text, and the latency looks fine.
+tech|Set the environment variable in the systemd unit instead of the user's whole session.
+tech|The ONNX model runs on the CPU with int8 quantization, which keeps the memory usage low.
+tech|Check the JSON response, parse the timestamps, and write the results to a CSV file.
+names|Canonical's Myna project is named after a bird that copies human speech.
+names|I talked to Sarah Nguyen and Rajesh Patel about the Seattle office move.
+names|Parakeet is NVIDIA's model, Whisper comes from OpenAI, and Voxtral is from Mistral.
+names|We're flying from Chicago to Montreal and then driving up to Quebec City.
+numbers|The invoice total is three hundred forty-two dollars and fifteen cents.
+numbers|My flight leaves at six forty-five in the morning on November twenty-third.
+numbers|The server has sixteen threads, sixty gigabytes of memory, and a two terabyte drive.
+numbers|Call me back at five five five, two one three, eight nine zero zero.
+numbers|Version zero point three point one shipped last night with two small patches.
+punctuation|Wait, what? You're telling me the build passed, but nothing actually got deployed?
+punctuation|First, back up your settings; second, reboot; and third, log back in.
+punctuation|She said, "I'll believe it when I see it," and then walked out of the room.
+casual|Yeah no, that's totally fine, I'll just grab it later.
+casual|Okay so basically the whole thing broke because of one typo, which is kind of hilarious.
+casual|Gonna be honest, I kinda forgot about that until just now.
+long|When I dictate a longer thought, I want the tool to keep up without dropping words, to put the commas in sensible places, and to get the capitalization right, so that I don't have to go back and fix everything by hand afterwards.
+long|The goal of this project is to make offline dictation on Linux feel as natural as it does on Windows, where you press a shortcut, speak, and the text simply appears wherever the cursor happens to be.
