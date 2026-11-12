@@ -28,7 +28,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git config --global user.name "linux-stt bot"
+          git config --global user.name "macaw bot"
           git config --global user.email "zervin@users.noreply.github.com"
           cd myna
           git remote add upstream https://github.com/canonical/myna.git

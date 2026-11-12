@@ -1,6 +1,6 @@
-# linux-stt
+# macaw
 
-Native Debian packaging for [Myna](https://github.com/canonical/myna), Canonical's
+Macaw is native Debian packaging for [Myna](https://github.com/canonical/myna), Canonical's
 offline speech-to-text dictation for the GNOME desktop: press a key, speak, and the
 text is typed into the focused app. No snaps.
 
@@ -16,8 +16,8 @@ Status: early. Targets Debian 13 (trixie), GNOME on Wayland.
 ## Development install
 
 ```sh
-git clone --recurse-submodules https://github.com/zervin/linux-stt.git
-cd linux-stt/myna/client && cargo build --release --locked -p myna-desktop -p myna-hud -p myna-cli
+git clone --recurse-submodules https://github.com/zervin/macaw.git
+cd macaw/myna/client && cargo build --release --locked -p myna-desktop -p myna-hud -p myna-cli
 cd ../server && uv sync --extra parakeet
 cd ../.. && ./install-user.sh
 systemctl --user enable --now myna-server myna-desktop

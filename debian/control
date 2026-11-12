@@ -18,8 +18,8 @@ Build-Depends: debhelper-compat (= 13),
                python3.13,
                rustup,
 Standards-Version: 4.7.2
-Homepage: https://github.com/zervin/linux-stt
-Vcs-Git: https://github.com/zervin/linux-stt.git
+Homepage: https://github.com/zervin/macaw
+Vcs-Git: https://github.com/zervin/macaw.git
 Rules-Requires-Root: no
 
 Package: myna-desktop

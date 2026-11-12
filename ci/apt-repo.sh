@@ -8,7 +8,7 @@ set -euo pipefail
 debs="$1"
 out="$2"
 suite=trixie
-pages_url="${PAGES_URL:-https://zervin.github.io/linux-stt}"
+pages_url="${PAGES_URL:-https://zervin.github.io/macaw}"
 
 sudo apt-get install -y -qq --no-install-recommends apt-utils gnupg >/dev/null
 
@@ -26,8 +26,8 @@ mkdir -p "dists/$suite/main/binary-amd64"
 apt-ftparchive packages pool > "dists/$suite/main/binary-amd64/Packages"
 gzip -9kf "dists/$suite/main/binary-amd64/Packages"
 apt-ftparchive \
-    -o "APT::FTPArchive::Release::Origin=linux-stt" \
-    -o "APT::FTPArchive::Release::Label=linux-stt" \
+    -o "APT::FTPArchive::Release::Origin=macaw" \
+    -o "APT::FTPArchive::Release::Label=macaw" \
     -o "APT::FTPArchive::Release::Suite=$suite" \
     -o "APT::FTPArchive::Release::Codename=$suite" \
     -o "APT::FTPArchive::Release::Architectures=amd64" \
@@ -38,5 +38,5 @@ export GNUPGHOME="$(mktemp -d)"
 printf '%s\n' "$APT_SIGNING_KEY" | gpg --batch --import 2>/dev/null
 gpg --batch --yes --armor --detach-sign -o "dists/$suite/Release.gpg" "dists/$suite/Release"
 gpg --batch --yes --clearsign -o "dists/$suite/InRelease" "dists/$suite/Release"
-gpg --export > linux-stt-archive-keyring.gpg
+gpg --export > macaw-archive-keyring.gpg
 rm -rf "$GNUPGHOME"
