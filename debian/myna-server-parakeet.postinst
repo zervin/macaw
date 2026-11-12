@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+#DEBHELPER#
+
+# dh_installsystemduser enables the user unit but never restarts it, so an
+# upgrade would leave the old binary running until the next login. Reload and
+# restart it (only where it is already running) in each user's manager.
+if [ "$1" = "configure" ] && [ -n "$2" ] && [ -z "${DPKG_ROOT:-}" ] && command -v loginctl >/dev/null; then
+	for user in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}'); do
+		systemctl --user -M "$user@" daemon-reload >/dev/null 2>&1 || true
+		systemctl --user -M "$user@" try-restart myna-server.service >/dev/null 2>&1 || true
+	done
+fi
+
+exit 0
