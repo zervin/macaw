@@ -22,6 +22,21 @@ Status: early. Targets Debian 13 (trixie), GNOME on Wayland, amd64.
 The package names keep Myna's name because they are Myna. Anything macaw adds of its own
 will be named `macaw-*`.
 
+## Install from the apt repository
+
+The repository goes live with the first tagged release. It is signed with the key in
+[`macaw-archive-key.asc`](macaw-archive-key.asc), fingerprint
+`3142 5706 23DB C5C4 E976  B0F6 11E8 2FCA 6433 F584`.
+
+```sh
+curl -fsSL https://zervin.github.io/macaw/macaw-archive-keyring.gpg \
+  | sudo tee /usr/share/keyrings/macaw-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/macaw-archive-keyring.gpg] https://zervin.github.io/macaw trixie main" \
+  | sudo tee /etc/apt/sources.list.d/macaw.list
+sudo apt update && sudo apt install myna-desktop myna-server-parakeet
+myna-desktop --install-shortcut '<Super>j'
+```
+
 ## Build
 
 ```sh
