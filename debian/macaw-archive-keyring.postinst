@@ -13,4 +13,10 @@ if [ "$1" = configure ] && [ -f "$sources" ] && grep -q "^Signed-By: $old\$" "$s
 	rm -f "$old"
 fi
 
+# Without this, systems with i386 enabled (Steam, Wine) get a notice on every
+# apt update that the repository has no i386 packages.
+if [ "$1" = configure ] && [ -f "$sources" ] && ! grep -q "^Architectures:" "$sources"; then
+	sed -i "s|^Components: main\$|&\nArchitectures: amd64|" "$sources"
+fi
+
 exit 0

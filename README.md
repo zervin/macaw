@@ -54,7 +54,7 @@ These are the same steps the script runs.
 
    ```sh
    gpg --dearmor < macaw.asc | sudo tee /usr/share/keyrings/macaw-archive-keyring.gpg >/dev/null
-   printf 'Types: deb\nURIs: https://zervin.github.io/macaw\nSuites: trixie\nComponents: main\nSigned-By: /usr/share/keyrings/macaw-archive-keyring.gpg\n' \
+   printf 'Types: deb\nURIs: https://zervin.github.io/macaw\nSuites: trixie\nComponents: main\nArchitectures: amd64\nSigned-By: /usr/share/keyrings/macaw-archive-keyring.gpg\n' \
      | sudo tee /etc/apt/sources.list.d/macaw.sources
    ```
 

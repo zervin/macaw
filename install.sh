@@ -115,6 +115,7 @@ Types: deb
 URIs: $REPO_URL
 Suites: $SUITE
 Components: main
+Architectures: amd64
 Signed-By: $KEYRING
 EOF
 sudo install -m 0644 "$tmp/macaw.sources" "$SOURCES"
