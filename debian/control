@@ -35,7 +35,7 @@ Depends: ${misc:Depends},
          pipewire,
 Recommends: gnome-shell (>= 46),
             myna-config,
-            myna-server-parakeet,
+            myna-server-parakeet | myna-server,
 Description: offline push-to-talk dictation for the GNOME desktop
  Myna types what you say into the focused application. Press a shortcut,
  speak, press it again, and the transcript is injected through IBus.
@@ -54,6 +54,9 @@ Architecture: amd64
 Depends: ${misc:Depends},
          python3.13,
 Recommends: myna-desktop,
+Provides: myna-server,
+Conflicts: myna-server,
+Replaces: myna-server,
 Description: local speech recognition backend for Myna (Parakeet, CPU)
  Runs NVIDIA's Parakeet TDT 0.6B v3 model (25 languages, punctuation) as
  int8 ONNX on the CPU and serves it to myna-desktop over a Unix socket.
@@ -62,6 +65,9 @@ Description: local speech recognition backend for Myna (Parakeet, CPU)
  service's first start into ~/.cache/myna/models from a pinned URL and is
  checked against a SHA-256 hash. It is licensed CC-BY-4.0; credits are in
  /usr/share/doc/myna-server-parakeet/MODEL-NOTICE.
+ .
+ One model package is installed at a time: installing another myna-server
+ package replaces this one.
  .
  Unofficial build of Myna by Canonical Ltd. (github.com/canonical/myna),
  with small patches, made by the macaw project. Not affiliated with or

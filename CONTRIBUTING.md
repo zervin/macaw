@@ -32,6 +32,23 @@ answers `@claude` in issues and pull requests. It is advisory only. When somethi
 human decision, such as security, licensing or a release, it labels the issue or pull
 request `needs-human`, and the maintainer decides.
 
+## Model packages
+
+Each speech model is its own package, `myna-server-<family>`, where
+`<family>` is one of Myna's model families (`parakeet`, `whisper`, `funasr`).
+Only one is installed at a time: every model package has
+`Provides`, `Conflicts` and `Replaces: myna-server`, so
+`sudo apt install myna-server-whisper` swaps out Parakeet. A model package
+ships:
+
+- `/usr/libexec/myna/myna-server-<family>`, an executable that runs the server
+  on `$XDG_RUNTIME_DIR/myna.sock`. Myna Settings lists a model by this file.
+- the `myna-server` user unit that starts it (`dh_installsystemduser --name=myna-server`).
+- `/usr/share/myna/engines/<family>.json`, the engine it runs on, in the
+  format of Myna's `modelctl engines`, for example
+  `{"active-engine":"cpu","engines":[{"name":"cpu","compatible":true}]}`.
+  Without it Settings shows no engine.
+
 ## Releasing (maintainers)
 
 1. **Upstream updates** arrive as a pull request from the weekly `upstream-sync` job

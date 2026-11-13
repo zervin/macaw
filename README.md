@@ -15,7 +15,11 @@ that it offers back upstream.
 > direction and testing. Every AI-written commit says so. See [AI-ASSISTED.md](AI-ASSISTED.md).
 
 **Status:** early, used daily by its maintainer. Debian 13 (trixie), GNOME on Wayland,
-amd64. Other setups may work but are untested.
+amd64. Myna also supports Xfce and KDE Plasma, and these packages include what they
+need, but we have not tested them.
+
+**On Ubuntu or a derivative,** use [Myna's official snaps](https://github.com/canonical/myna)
+instead. These packages are built for Debian only.
 
 ## Install
 
@@ -67,7 +71,8 @@ These are the same steps the script runs.
 
 ### After installing
 
-1. **Log out and back in once**, so GNOME Shell loads the dictation indicator.
+1. **Log out and back in once**, so GNOME Shell loads the dictation indicator. On Xfce
+   or KDE Plasma, then open Myna Settings: it sets up IBus and the shortcut.
 2. The speech model (about 800 MB) **downloads in the background** the first time the
    service starts. An interrupted download resumes. Follow it with
    `journalctl --user -fu myna-server`.
@@ -98,8 +103,8 @@ the space, `~/.cache/myna` (the model) and `~/.config/myna` (your settings).
 | Package | What it is |
 |---|---|
 | `myna-desktop` | The dictation daemon (a systemd user service), the on-screen indicator and its GNOME Shell extension. |
-| `myna-server-parakeet` | Speech recognition on your CPU: NVIDIA's Parakeet TDT 0.6B v3, int8 ONNX, 25 European languages, with punctuation. |
-| `myna-config` | Myna Settings. |
+| `myna-server-parakeet` | Speech recognition on your CPU: NVIDIA's Parakeet TDT 0.6B v3, int8 ONNX, 25 European languages, with punctuation. Model packages replace one another; Parakeet is the only one so far. |
+| `myna-config` | Myna Settings, and the indicator host Xfce and Plasma start at login. |
 | `macaw-archive-keyring` | The repository's signing keys, kept current by apt. |
 
 **Privacy.** Audio goes from your microphone to the local recognizer over a private
@@ -150,7 +155,10 @@ Needs Docker. `install-user.sh` is a development install into `~/.local` instead
 The changes are on the `debian-native` branch of [zervin/myna](https://github.com/zervin/myna),
 one commit per change, so each can be offered upstream:
 
-- The GNOME Shell extension also starts an indicator installed at `/usr/libexec/myna`.
+- The GNOME Shell extension, and on Xfce and Plasma the indicator host, also start an
+  indicator installed at `/usr/libexec/myna`.
+- On a package install, Myna Settings opens its setup wizard only for desktop pieces
+  (IBus on Xfce and Plasma), never to install snaps.
 - Myna Settings works on a package install (built with `MYNA_PACKAGING=deb`). It shows the
   installed model, leaves models to apt, keeps settings under `~/.config/myna`, and sends
   bug reports here.

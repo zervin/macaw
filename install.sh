@@ -134,6 +134,8 @@ cat <<EOF
 Installed. Next:
 
   1. Log out and back in once, so GNOME Shell loads the dictation indicator.
+     On Xfce or KDE Plasma (untested), open Myna Settings after that: it
+     sets up IBus, which Myna types through, and the shortcut.
   2. The speech model (about 800 MB) downloads in the background on first
      start. Follow it with:  journalctl --user -fu myna-server
   3. Press Super+J, speak, press Super+J again. The text is typed where your

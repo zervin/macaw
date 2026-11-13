@@ -54,8 +54,14 @@ override_dh_auto_install:
 		$(SRC)/client/data/glib-2.0/schemas/com.canonical.Myna.Dictation.gschema.xml
 	install -Dm644 -t debian/myna-desktop/usr/share/gnome-shell/extensions/myna-shell@canonical.com \
 		$(SRC)/extensions/myna-shell/*.js $(SRC)/extensions/myna-shell/metadata.json
-	# myna-config (no polkit action or HUD autostart: both serve the snap)
+	# myna-config (no polkit action: it serves the snap's model setup).
+	# The HUD host starts the indicator on Xfce and Plasma, which have no
+	# shell extension; its autostart entry is OnlyShowIn=XFCE;KDE;.
 	install -Dm755 $(SRC)/client/target/release/myna-config debian/myna-config/usr/bin/myna-config
+	install -Dm755 $(SRC)/client/target/release/myna-hud-host \
+		debian/myna-config/usr/libexec/myna-config/myna-hud-host
+	install -Dm644 $(SRC)/client/myna-config/data/com.canonical.Myna.HudHost.desktop \
+		debian/myna-config/etc/xdg/autostart/com.canonical.Myna.HudHost.desktop
 	install -Dm644 -t debian/myna-config/usr/share/icons/hicolor/scalable/apps \
 		$(SRC)/client/data/icons/hicolor/scalable/apps/com.canonical.Myna.Config.svg
 	sh $(SRC)/client/myna-config/build/install-translations.sh \
@@ -71,6 +77,8 @@ override_dh_auto_install:
 		debian/myna-server-parakeet/usr/lib/myna/fetch_parakeet_onnx.py
 	install -Dm755 debian/myna-server-parakeet.launcher \
 		debian/myna-server-parakeet/usr/libexec/myna/myna-server-parakeet
+	install -Dm644 debian/myna-server-parakeet.engines.json \
+		debian/myna-server-parakeet/usr/share/myna/engines/parakeet.json
 	# Attribution: AGPL text, upstream notices, crate and model licenses
 	for p in myna-desktop myna-config myna-server-parakeet; do \
 		install -Dm644 $(SRC)/LICENSE debian/$$p/usr/share/doc/$$p/LICENSE; \
