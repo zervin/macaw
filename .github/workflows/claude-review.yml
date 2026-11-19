@@ -1,10 +1,17 @@
 name: claude-review
 
-# An advisory Claude reviewer (anthropics/claude-code-action):
+# A Claude reviewer (anthropics/claude-code-action):
 # - reviews each non-draft pull request from a branch of this repository;
 # - answers "@claude" in issues and pull requests from people with write access.
-# It never approves, merges, pushes or releases. When something needs a human
-# decision it adds the `needs-human` label. See CONTRIBUTING.md, "Reviews".
+# Claude itself never approves, merges, pushes or releases. When something
+# needs a human decision it adds the `needs-human` label.
+#
+# Auto-merge: the automerge job turns on GitHub auto-merge (squash) for a pull
+# request Claude reviewed without adding `needs-human`, and for Dependabot's
+# hash-pinned bumps. The main ruleset makes the merge wait for green CI. A PR
+# whose review did not run (no key) is never queued, and adding `needs-human`
+# at any point turns auto-merge off. Merging publishes nothing: only a v* tag
+# releases. See CONTRIBUTING.md, "Reviews".
 #
 # Pull requests from forks are skipped: they get no secrets, and the action
 # refuses to run outside contributors' code anyway. Needs one secret,
@@ -12,7 +19,7 @@ name: claude-review
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review]
+    types: [opened, synchronize, ready_for_review, labeled]
   # zizmor: ignore[dangerous-triggers] -- the action acts only for users with
   # write access, checks out the base branch (never PR code) and holds no
   # write credentials beyond comments and labels.
@@ -31,6 +38,7 @@ jobs:
   review:
     if: >-
       github.event_name == 'pull_request' &&
+      github.event.action != 'labeled' &&
       !github.event.pull_request.draft &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
@@ -39,6 +47,8 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
+    outputs:
+      reviewed: ${{ steps.claude.outcome == 'success' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: env.HAS_KEY == 'true'
@@ -46,6 +56,7 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
       - uses: anthropics/claude-code-action@d5f7970ae232b6039636a16ea7f251e58e814f38 # v1.0.272
+        id: claude
         if: env.HAS_KEY == 'true'
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -65,11 +76,45 @@ jobs:
             - user-facing docs that the change makes wrong.
             Be specific and brief; skip praise and style nits. Post one
             top-level comment with `gh pr comment`, and inline comments for
-            specific lines. If the change touches signing, release, secrets,
-            licensing, or anything you are unsure is safe, add the label with
-            `gh pr edit --add-label needs-human` and say why. Never approve.
+            specific lines. A pull request you do not label is merged
+            automatically once CI passes. So add the label with
+            `gh pr edit --add-label needs-human`, and say why, if you find a
+            bug or anything that should block merging, if you could not see
+            the code that changes (for example a submodule range), or if the
+            change touches signing, release, secrets, workflows, licensing, or
+            anything you are unsure is safe. Never approve.
           claude_args: |
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr edit:*)"
+
+  # Queues or cancels auto-merge; the merge itself waits on the ruleset's
+  # required checks. No checkout and no PR code: only gh calls on metadata.
+  automerge:
+    needs: review
+    if: >-
+      always() &&
+      github.event_name == 'pull_request' &&
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (github.event.action == 'labeled' ||
+       needs.review.outputs.reviewed == 'true' ||
+       (github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'))
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.html_url }}
+          ACTION: ${{ github.event.action }}
+        run: |
+          set -eu
+          if gh pr view "$PR" --json labels --jq '.labels[].name' | grep -qx needs-human; then
+            gh pr merge "$PR" --disable-auto 2>/dev/null || true
+            echo "needs-human: auto-merge off"
+          elif [ "$ACTION" != labeled ]; then
+            gh pr merge "$PR" --auto --squash
+          fi
 
   mention:
     if: >-

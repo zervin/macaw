@@ -28,9 +28,15 @@ what you submit. See [AI-ASSISTED.md](AI-ASSISTED.md).
 ## Reviews
 
 An automated Claude reviewer comments on pull requests from people with write access, and
-answers `@claude` in issues and pull requests. It is advisory only. When something needs a
-human decision, such as security, licensing or a release, it labels the issue or pull
-request `needs-human`, and the maintainer decides.
+answers `@claude` in issues and pull requests. It never approves or merges. When something
+needs a human decision, such as a bug, security, licensing, workflows or a release, or when
+it could not see the changed code, it labels the issue or pull request `needs-human`, and
+the maintainer decides.
+
+A pull request the reviewer did not label, and Dependabot's hash-pinned bumps, get GitHub
+auto-merge (squash): they merge once the required checks on `main` pass. Adding
+`needs-human` by hand turns auto-merge off. If the review did not run, nothing is queued.
+Merging publishes nothing; only a `v*` tag releases.
 
 ## Model packages
 
