@@ -8,10 +8,12 @@ name: claude-review
 #
 # Auto-merge: the automerge job turns on GitHub auto-merge (squash) for a pull
 # request Claude reviewed without adding `needs-human`, and for Dependabot's
-# hash-pinned bumps. The main ruleset makes the merge wait for green CI. A PR
-# whose review did not run (no key) is never queued, and adding `needs-human`
-# at any point turns auto-merge off. Merging publishes nothing: only a v* tag
-# releases. See CONTRIBUTING.md, "Reviews".
+# hash-pinned bumps, but never for an upstream sync/ pull request: a
+# maintainer merges those, and the merge releases (upstream-release.yml). The
+# main ruleset makes the merge wait for green CI. A PR whose review did not
+# run (no key) is never queued, and adding `needs-human` at any point turns
+# auto-merge off. Other merges publish nothing: only a v* tag releases. See
+# CONTRIBUTING.md, "Reviews".
 #
 # Pull requests from forks are skipped: they get no secrets, and the action
 # refuses to run outside contributors' code anyway. Needs one secret,
@@ -50,10 +52,13 @@ jobs:
     outputs:
       reviewed: ${{ steps.claude.outcome == 'success' }}
     steps:
+      # With the myna submodule's history, so a sync/ pull request's real
+      # changes can be read (git only; nothing is built or run).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: env.HAS_KEY == 'true'
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+          submodules: true
           persist-credentials: false
       - uses: anthropics/claude-code-action@d1f58ad5e6f4d2b79547e63e37c2116064135896 # v1.0.277
         id: claude
@@ -74,6 +79,16 @@ jobs:
             - license and attribution: Myna, Murmure, NVIDIA Parakeet and others
               must stay credited, AGPL source availability must hold;
             - user-facing docs that the change makes wrong.
+            If the pull request moves the myna submodule (a sync/vX.Y.Z pull
+            request from upstream-sync), gh pr diff shows only the pointer
+            OLD -> NEW; the checkout has myna at NEW with its history. Review
+            the debian-native patches with `git -C myna log --oneline vX.Y.Z..NEW`
+            and `git -C myna range-diff OLD_TAG..OLD vX.Y.Z..NEW` (OLD_TAG from
+            `git -C myna describe --abbrev=0 OLD`), and upstream's changes with
+            `git -C myna diff --stat OLD_TAG vX.Y.Z` and `git -C myna diff`,
+            focusing on network access, downloads and their checksums,
+            licensing, dependencies (Cargo.lock, requirements) and systemd
+            units. Merging such a pull request publishes signed packages.
             Be specific and brief; skip praise and style nits. Post one
             top-level comment with `gh pr comment`, and inline comments for
             specific lines. A pull request you do not label is merged
@@ -84,7 +99,7 @@ jobs:
             change touches signing, release, secrets, workflows, licensing, or
             anything you are unsure is safe. Never approve.
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr edit:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr edit:*),Bash(git -C myna log:*),Bash(git -C myna diff:*),Bash(git -C myna show:*),Bash(git -C myna range-diff:*),Bash(git -C myna describe:*)"
 
   # Queues or cancels auto-merge; the merge itself waits on the ruleset's
   # required checks. No checkout and no PR code: only gh calls on metadata.
@@ -95,6 +110,7 @@ jobs:
       github.event_name == 'pull_request' &&
       !github.event.pull_request.draft &&
       github.event.pull_request.head.repo.full_name == github.repository &&
+      !startsWith(github.event.pull_request.head.ref, 'sync/') &&
       (github.event.action == 'labeled' ||
        needs.review.outputs.reviewed == 'true' ||
        (github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'))

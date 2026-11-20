@@ -1,0 +1,76 @@
+name: upstream-release
+
+# When a push to main moves the myna submodule (a merged upstream-sync pull
+# request), finish CONTRIBUTING.md, "Releasing":
+# 1. push the upstream release tag the submodule sits on to zervin/myna, so
+#    dev/version.sh names the packages after it;
+# 2. move the fork's debian-native to the merged commit. When that rewrites
+#    it, the old tip is first kept as a tag archive/debian-native-<sha>, so the
+#    source of every published release stays reachable (AGPL);
+# 3. tag macaw v<X.Y.Z>-<YYYYMMDD>, which runs build.yml's release job.
+#
+# Pushes use FORK_TOKEN (see upstream-sync.yml): a tag pushed with
+# GITHUB_TOKEN would start no workflow, so it would not release. A merge made
+# by GITHUB_TOKEN (auto-merge) does not start this workflow either, which is
+# why the automerge job in claude-review.yml leaves sync/ pull requests alone.
+# workflow_dispatch reruns it for main's HEAD; a HEAD already tagged is skipped.
+
+on:
+  push:
+    branches: [main]
+    paths: [myna]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upstream-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Tag the fork, move debian-native, tag macaw
+        env:
+          FORK_TOKEN: ${{ secrets.FORK_TOKEN }}
+        run: |
+          set -eu
+          if [ -n "$(git tag --points-at HEAD 'v*')" ]; then echo "already tagged"; exit 0; fi
+          git config --global user.name "macaw bot"
+          git config --global user.email "zervin@users.noreply.github.com"
+          fork="https://x-access-token:${FORK_TOKEN}@github.com/zervin/myna.git"
+
+          cd myna
+          git fetch -q https://github.com/canonical/myna.git 'refs/tags/v*:refs/tags/v*'
+          base=$(git describe --abbrev=0 --match 'v[0-9]*' HEAD)
+          case "$base" in v[0-9]*.[0-9]*.[0-9]*) ;; *) echo "bad base tag $base"; exit 1 ;; esac
+          git push -q "$fork" "refs/tags/$base"
+
+          new=$(git rev-parse HEAD)
+          git fetch -q origin debian-native
+          old=$(git rev-parse FETCH_HEAD)
+          if [ "$old" != "$new" ]; then
+            if git merge-base --is-ancestor "$old" "$new"; then
+              git push -q "$fork" "$new:refs/heads/debian-native"
+            else
+              git push -q "$fork" "$old:refs/tags/archive/debian-native-$(git rev-parse --short=8 "$old")"
+              git push -q --force-with-lease="refs/heads/debian-native:$old" "$fork" "$new:refs/heads/debian-native"
+            fi
+          fi
+          cd ..
+
+          tag="v${base#v}-$(date -u +%Y%m%d)"
+          t=$tag n=0
+          while git rev-parse -q --verify "refs/tags/$t" >/dev/null; do n=$((n + 1)); t="$tag.$n"; done
+          git tag -a "$t" -m "macaw $t: myna $base"
+          git push -q "https://x-access-token:${FORK_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/$t"
+          echo "released $t"
