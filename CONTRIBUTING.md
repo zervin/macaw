@@ -36,7 +36,9 @@ the maintainer decides.
 A pull request the reviewer did not label, and Dependabot's hash-pinned bumps, get GitHub
 auto-merge (squash): they merge once the required checks on `main` pass. Adding
 `needs-human` by hand turns auto-merge off. If the review did not run, nothing is queued.
-Merging publishes nothing; only a `v*` tag releases.
+Upstream `sync/` pull requests never auto-merge: merging one releases (see Releasing).
+Neither do other changes under `.github/`: the reviewer cannot review its own workflow.
+Other merges publish nothing; only a `v*` tag releases.
 
 ## Model packages
 
@@ -57,13 +59,16 @@ ships:
 
 ## Releasing (maintainers)
 
-1. **Upstream updates** arrive as a pull request from the weekly `upstream-sync` job
-   (`Update myna to upstream vX.Y.Z`), with the rebased patches on the fork's
-   `sync/vX.Y.Z` branch. Read upstream's changes, check that CI passes, then merge.
-2. Move the fork's `debian-native` branch to the merged commit:
-   `git -C myna push origin HEAD:debian-native`. That is a fast-forward unless the rebase
-   rewrote it; the `sync/` branch keeps the old commits reachable either way.
-3. Tag and push: `git tag v<myna version>-<YYYYMMDD> && git push origin --tags`. The tag
-   builds, attests, creates the GitHub release, and publishes the signed apt repository.
+1. **Upstream updates** arrive as a pull request from the `upstream-sync` job, which checks
+   canonical/myna every six hours (`Update myna to upstream vX.Y.Z`). The rebased patches
+   are on the fork's `sync/vX.Y.Z` branch, and the upstream tag is pushed to the fork.
+   The Claude reviewer reads the submodule's changes. Read upstream's changes, check that
+   CI passes, then merge.
+2. The merge runs `upstream-release`, which moves the fork's `debian-native` branch to the
+   merged commit (keeping a rewritten old tip as tag `archive/debian-native-<sha>`), then
+   tags `v<myna version>-<YYYYMMDD>`. The tag builds, attests, creates the GitHub release,
+   and publishes the signed apt repository.
+3. A packaging-only release (no submodule change) is tagged by hand:
+   `git tag -a v<myna version>-<YYYYMMDD> -m ... && git push origin --tags`.
 4. On a machine with the repository installed, run `sudo apt update && sudo apt upgrade`,
    and check that `systemctl --user status myna-server myna-desktop` shows both restarted.
