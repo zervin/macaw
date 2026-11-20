@@ -37,6 +37,7 @@ A pull request the reviewer did not label, and Dependabot's hash-pinned bumps, g
 auto-merge (squash): they merge once the required checks on `main` pass. Adding
 `needs-human` by hand turns auto-merge off. If the review did not run, nothing is queued.
 Upstream `sync/` pull requests never auto-merge: merging one releases (see Releasing).
+Neither do other changes under `.github/`: the reviewer cannot review its own workflow.
 Other merges publish nothing; only a `v*` tag releases.
 
 ## Model packages

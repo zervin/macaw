@@ -8,8 +8,9 @@ name: claude-review
 #
 # Auto-merge: the automerge job turns on GitHub auto-merge (squash) for a pull
 # request Claude reviewed without adding `needs-human`, and for Dependabot's
-# hash-pinned bumps, but never for an upstream sync/ pull request: a
-# maintainer merges those, and the merge releases (upstream-release.yml). The
+# hash-pinned bumps. Never for an upstream sync/ pull request (a maintainer
+# merges those, and the merge releases: upstream-release.yml), nor for any
+# other change under .github/, which the action refuses to review. The
 # main ruleset makes the merge wait for green CI. A PR whose review did not
 # run (no key) is never queued, and adding `needs-human` at any point turns
 # auto-merge off. Other merges publish nothing: only a v* tag releases. See
@@ -50,7 +51,9 @@ jobs:
       issues: write
       id-token: write
     outputs:
-      reviewed: ${{ steps.claude.outcome == 'success' }}
+      # The action's own conclusion: on a pull request that edits this file
+      # it skips itself, and the step still succeeds.
+      reviewed: ${{ steps.claude.outputs.conclusion == 'success' }}
     steps:
       # With the myna submodule's history, so a sync/ pull request's real
       # changes can be read (git only; nothing is built or run).
@@ -123,11 +126,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.html_url }}
           ACTION: ${{ github.event.action }}
+          DEPENDABOT: ${{ github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]' }}
         run: |
           set -eu
           if gh pr view "$PR" --json labels --jq '.labels[].name' | grep -qx needs-human; then
             gh pr merge "$PR" --disable-auto 2>/dev/null || true
             echo "needs-human: auto-merge off"
+          elif [ "$DEPENDABOT" != true ] && gh pr diff "$PR" --name-only | grep -q '^\.github/'; then
+            # Workflow and repo-config changes always get a human merge.
+            gh pr merge "$PR" --disable-auto 2>/dev/null || true
+            echo ".github/ changed: auto-merge off"
           elif [ "$ACTION" != labeled ]; then
             gh pr merge "$PR" --auto --squash
           fi
